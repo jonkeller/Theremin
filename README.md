@@ -8,6 +8,6 @@ A simple HTML/JavaScript theremin.  It will run in a browser, and should run in 
 * Hold the phone vertically but upside-down: 0Hz
 * Hold the phone vertically and shake it up and down: various pitches
 
-Tested in Chrome on a Nexus 5.
+Testing: Works fine in Chrome on a Nexus 5.  Does not work in Safari on an iPad.
 
 
