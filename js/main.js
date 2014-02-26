@@ -19,7 +19,8 @@ requirejs(['jquery', 'bootstrap'], function($)
 {
     var audioContext;
     var oscillator;
-    var pitch = 440;
+    var isRunning = false;
+
     if (isPhoneGap()) {
         document.addEventListener("deviceready", onDeviceReady, false);
     } else {
@@ -44,8 +45,19 @@ requirejs(['jquery', 'bootstrap'], function($)
             return;
         }
 
-        $('#startBtn').on('click', start);
-        $('#stopBtn').on('click', stop);
+        $('#startStopBtn').on('click', toggle);
+    }
+
+    function toggle(evt) {
+        if (isRunning) {
+            isRunning = false;
+            $('#startStopBtn').attr('value', 'Start');
+            stop(evt);
+        } else {
+            isRunning = true;
+            $('#startStopBtn').attr('value', 'Stop');
+            start(evt);
+        }
     }
 
     function start(evt) {
@@ -55,8 +67,6 @@ requirejs(['jquery', 'bootstrap'], function($)
             startWatchingAccelerometer();
         }
         startOscillator();
-        disable('#startBtn');
-        enable('#stopBtn');
         evt.preventDefault();
     }
 
@@ -67,8 +77,6 @@ requirejs(['jquery', 'bootstrap'], function($)
             stopWatchingAccelerometer();
         }
         stopOscillator();
-        enable('#startBtn');
-        disable('#stopBtn');
         evt.preventDefault();
     }
 
@@ -81,8 +89,7 @@ requirejs(['jquery', 'bootstrap'], function($)
     }
 
     function displayError(string) {
-        var prev = $('#status').html();
-        $('#status').html(prev + '\n' + string);
+        alert(string);
     }
 
     var accelerometerOptions = { frequency: 500 };
@@ -102,24 +109,24 @@ requirejs(['jquery', 'bootstrap'], function($)
 
     function onDeviceMotion(evt) {
         adjustPitch(evt.accelerationIncludingGravity);
-        /* Ignore for now:
-        evt.acceleration.x, .y, and .z
-        evt.rotationRate.alpha, .beta, and .gamma
-        */
     }
+
+    var GREAT_A = 110;
+    var GRAVITY = 9.80665;
 
     function adjustPitch(accelerationIncludingGravity) {
         // ... accelerationIncludingGravity.x, accelerationIncludingGravity.y, accelerationIncludingGravity.z
         var y = accelerationIncludingGravity.y || 0;
-        pitch = (y+9.8) * 44.9;
-//        $('#status').html(y + ' -> ' + pitch);
+        var exp = 2*(y+GRAVITY)/GRAVITY;
+        var pitch = GREAT_A*Math.pow(2, exp);
+
         oscillator.frequency.value = pitch;
     }
 
     function startOscillator() {
         oscillator = audioContext.createOscillator();
         oscillator.type = oscillator.SINE;
-        oscillator.frequency.value = pitch;
+        oscillator.frequency.value = 0;
         oscillator.connect(audioContext.destination);
         oscillator.noteOn(0);
         var gainObj = audioContext.createGain();
